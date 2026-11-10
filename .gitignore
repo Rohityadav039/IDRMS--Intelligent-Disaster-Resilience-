@@ -1,0 +1,11 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies and runtime data
+node_modules/
+npm-debug.log*
+idrms_data.json
+public/uploads/
+.DS_Store
