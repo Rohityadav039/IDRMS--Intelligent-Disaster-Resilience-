@@ -1,0 +1,167 @@
+/* IDRMS Sachet Govt Portal Theme */
+:root {
+  --sachet-navy: #0F2C59;
+  --sachet-amber: #D97706;
+  --sachet-red: #DC2626;
+  --sachet-green: #16A34A;
+  --sachet-header: #1E3A8A;
+  --sachet-light-bg: #F8FAFC;
+  --sachet-card-bg: #FFFFFF;
+  --sachet-text: #0F172A;
+}
+
+body.dark-mode {
+  --sachet-light-bg: #0F172A;
+  --sachet-card-bg: #1E293B;
+  --sachet-text: #F8FAFC;
+  background-color: #0F172A;
+  color: #F8FAFC;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--sachet-light-bg);
+  color: var(--sachet-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Indian Tricolor Accent Strip */
+.tricolor-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);
+}
+
+/* Sachet Govt Top Header */
+.govt-header-top {
+  background-color: #0B192C;
+  color: #E2E8F0;
+  font-size: 0.85rem;
+}
+
+.govt-brand-bar {
+  background-color: var(--sachet-navy);
+  color: white;
+}
+
+/* Alert Ticker */
+.alert-ticker-container {
+  background-color: #7F1D1D;
+  color: white;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.alert-ticker-content {
+  display: inline-block;
+  animation: ticker 35s linear infinite;
+}
+
+@keyframes ticker {
+  0% { transform: translate3d(100%, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Pulse animation for active disasters */
+.pulse-red {
+  animation: pulse-red-anim 2s infinite;
+}
+
+@keyframes pulse-red-anim {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+/* Cards & Modals */
+.sachet-card {
+  background-color: var(--sachet-card-bg);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dark-mode .sachet-card {
+  border-color: #334155;
+}
+
+/* High Contrast Input & Select Accessibility Styles */
+input, select, textarea {
+  color: #0F172A !important;
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+}
+
+body.dark-mode input, 
+body.dark-mode select, 
+body.dark-mode textarea {
+  color: #F8FAFC !important;
+  background-color: #0F172A !important;
+  border-color: #475569 !important;
+}
+
+body.dark-mode label {
+  color: #E2E8F0 !important;
+}
+
+/* Modal text contrast */
+.sachet-card h3, .sachet-card h2, .sachet-card h4 {
+  color: inherit;
+}
+
+/* GIS Map Container */
+#gis-map {
+  height: 480px;
+  width: 100%;
+  border-radius: 0.75rem;
+  z-index: 10;
+}
+
+/* LoRaWAN Console Badge */
+.lora-offline-active {
+  background-color: #DC2626;
+  color: white;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.6; }
+}
+
+#landslide-map {
+  height: 420px;
+  width: 100%;
+  border-radius: 0.75rem;
+  z-index: 10;
+}
+
+#livemap-map {
+  height: 560px;
+  width: 100%;
+  border-radius: 0.75rem;
+  z-index: 10;
+}
+
+.livemap-layer-toggle {
+  cursor: pointer;
+  user-select: none;
+}
+.livemap-layer-toggle input {
+  accent-color: #f59e0b;
+}
+
+.risk-gauge-track {
+  height: 8px;
+  border-radius: 20px;
+  background-color: #E2E8F0;
+  overflow: hidden;
+}
+
+body.dark-mode .risk-gauge-track {
+  background-color: #334155;
+}
+
+.risk-gauge-fill {
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.6s ease;
+}

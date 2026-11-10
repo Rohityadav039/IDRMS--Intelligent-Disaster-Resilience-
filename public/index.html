@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDRMS - Intelligence Disaster Resilience Management System</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="images/idrms_logo.jpg" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Leaflet GIS Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Custom Sachet Theme -->
+  <link rel="stylesheet" href="css/sachet-theme.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Indian Tricolor Ribbon -->
+  <div class="tricolor-bar"></div>
+
+  <!-- Government Portal Top Strip -->
+  <div class="govt-header-top py-1.5 px-4 flex flex-wrap justify-between items-center border-b border-slate-800 text-xs">
+    <div class="flex items-center gap-3">
+      <span class="font-bold tracking-wide text-amber-400"><i class="fa-solid fa-building-columns mr-1"></i> GOVERNMENT OF INDIA - DISASTER MANAGEMENT PLATFORM</span>
+      <span class="hidden md:inline text-slate-300">| Sachet Compliant NDMA Integration</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="supabase-db-badge" class="bg-slate-900 text-cyan-300 font-mono text-[11px] px-2.5 py-0.5 rounded border border-cyan-700 flex items-center gap-1.5 shadow">
+        <i class="fa-solid fa-database text-cyan-400"></i> DB Mode: Checking...
+      </span>
+      <span class="text-red-400 font-bold hidden sm:inline"><i class="fa-solid fa-phone-volume mr-1"></i> Helplines: <strong>1070</strong> / <strong>112</strong></span>
+      <button id="toggle-dark-mode" class="hover:text-amber-300 transition-colors font-bold"><i class="fa-solid fa-moon mr-1"></i> Theme Mode</button>
+    </div>
+  </div>
+
+  <!-- IDRMS Brand Header with Official Uploaded Logo -->
+  <header class="govt-brand-bar py-3 px-6 shadow-xl">
+    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-4 cursor-pointer" id="nav-brand">
+        <!-- Official IDRMS Logo Image -->
+        <img src="images/idrms_logo.jpg" alt="IDRMS Logo" class="h-14 w-auto rounded-xl shadow-lg bg-white p-1 border-2 border-amber-400 object-contain hover:scale-105 transition-transform" />
+        <div>
+          <h1 class="text-2xl font-black tracking-wider text-white flex items-center gap-2">
+            IDRMS <span class="text-xs bg-red-600 text-white font-bold px-2 py-0.5 rounded-full uppercase shadow">Sachet v2.4</span>
+          </h1>
+          <p class="text-xs text-amber-300 font-bold tracking-wide uppercase">Intelligence Disaster Resilience Management System</p>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex flex-wrap items-center gap-2">
+        <button id="tab-map" class="nav-btn bg-amber-500 text-slate-950 px-3.5 py-2 rounded-lg font-bold text-sm shadow hover:bg-amber-400 transition-all">
+          <i class="fa-solid fa-map-location-dot mr-1 text-slate-950"></i> GIS Map & Alerts
+        </button>
+        <button id="tab-livemap" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-satellite-dish mr-1 text-lime-400"></i> Live Map
+        </button>
+        <button id="tab-policies" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-scale-balanced mr-1 text-emerald-400"></i> DM Act & Refund Claims
+        </button>
+        <button id="tab-sponsors" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-hand-holding-hand mr-1 text-cyan-400"></i> Sponsors & NGO Relief
+        </button>
+        <button id="tab-weather" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-cloud-showers-heavy mr-1 text-blue-400"></i> Weather API
+        </button>
+        <button id="tab-volunteers" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-users-viewfinder mr-1 text-emerald-400"></i> Volunteer Radar
+        </button>
+        <button id="tab-lorawan" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-tower-cell mr-1 text-amber-400"></i> LoRaWAN Mesh
+        </button>
+        <button id="tab-resources" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-hospital-user mr-1 text-purple-400"></i> Shelters & Medical
+        </button>
+        <button id="tab-landslide" class="nav-btn bg-slate-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-slate-700 transition-all">
+          <i class="fa-solid fa-mountain mr-1 text-orange-400"></i> NER Landslide Watch
+        </button>
+        <button id="tab-admin" class="nav-btn bg-red-800 text-white px-3.5 py-2 rounded-lg font-semibold text-sm hover:bg-red-700 transition-all">
+          <i class="fa-solid fa-user-shield mr-1 text-yellow-300"></i> Admin Backend
+        </button>
+      </nav>
+
+      <!-- Auth Controls -->
+      <div id="auth-header-controls" class="flex items-center gap-2">
+        <button id="btn-open-login" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow">
+          <i class="fa-solid fa-right-to-bracket mr-1"></i> Login
+        </button>
+        <button id="btn-open-register" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-sm shadow">
+          <i class="fa-solid fa-user-plus mr-1"></i> Register
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Real-Time Emergency Ticker Bar -->
+  <div class="alert-ticker-container py-2 px-4 flex items-center font-bold text-sm border-y border-red-900 shadow-inner">
+    <span class="bg-red-900 text-yellow-300 px-3 py-1 rounded-md uppercase tracking-wider text-xs mr-3 flex items-center gap-1.5 shrink-0 z-10 shadow">
+      <i class="fa-solid fa-triangle-exclamation text-yellow-400 pulse-red"></i> SACHET RED ALERT
+    </span>
+    <div class="alert-ticker-content" id="alert-ticker-text">
+      Loading latest official NDMA disaster alerts...
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+    <!-- Network Status Indicator Banner -->
+    <div id="network-outage-banner" class="hidden mb-6 p-4 bg-red-900 text-white rounded-xl shadow-lg border-2 border-red-500 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-3 bg-red-600 rounded-full text-2xl font-black pulse-red">
+          <i class="fa-solid fa-wifi-slash"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold uppercase text-yellow-300">CELLULAR / INTERNET NETWORK DOWN</h3>
+          <p class="text-sm text-red-100">System switched to Sub-GHz LoRaWAN Emergency Mesh Radio Relay Mode. Packets sending via 868MHz Gateway Nodes.</p>
+        </div>
+      </div>
+      <button id="btn-lora-sos-direct" class="bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black px-5 py-2.5 rounded-lg shadow-lg uppercase text-sm">
+        <i class="fa-solid fa-radio mr-1.5"></i> Dispatch LoRaWAN Radio SOS
+      </button>
+    </div>
+
+    <!-- SECTION 1: GIS MAP & DISASTER ALERTS -->
+    <section id="sec-map" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Interactive Leaflet GIS Map -->
+        <div class="lg:col-span-2 sachet-card p-4 flex flex-col">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <i class="fa-solid fa-earth-asia text-blue-600"></i> Live Interactive GIS Disaster & Volunteer Map
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span> Disaster</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Volunteer</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Shelter</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> Hospital</span>
+            </div>
+          </div>
+          <div id="gis-map" class="shadow-md"></div>
+          <div class="mt-3 flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
+            <span><i class="fa-solid fa-crosshairs mr-1"></i> Coordinates: <strong id="map-coords-display" class="text-slate-900 dark:text-slate-100">28.6139° N, 77.2090° E</strong></span>
+            <button id="btn-recenter-map" class="text-blue-600 hover:underline font-bold"><i class="fa-solid fa-location-arrow"></i> Recenter Map</button>
+          </div>
+        </div>
+
+        <!-- Quick Emergency Panel & Stats -->
+        <div class="space-y-6">
+          <div class="sachet-card p-5 border-l-4 border-l-amber-500">
+            <h3 class="text-base font-bold mb-3 text-slate-900 dark:text-slate-100 flex items-center justify-between">
+              <span><i class="fa-solid fa-chart-line text-amber-500 mr-2"></i> Real-time Command Metrics</span>
+              <span class="text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">LIVE</span>
+            </h3>
+            <div class="grid grid-cols-2 gap-3" id="system-stats-grid">
+              <div class="bg-red-50 dark:bg-slate-800 p-3 rounded-lg border border-red-200 dark:border-slate-700">
+                <span class="text-xs text-slate-600 dark:text-slate-300 block font-semibold">Active Disasters</span>
+                <span class="text-2xl font-black text-red-600" id="stat-active-disasters">0</span>
+              </div>
+              <div class="bg-emerald-50 dark:bg-slate-800 p-3 rounded-lg border border-emerald-200 dark:border-slate-700">
+                <span class="text-xs text-slate-600 dark:text-slate-300 block font-semibold">Volunteers Nearby</span>
+                <span class="text-2xl font-black text-emerald-600" id="stat-volunteers">0</span>
+              </div>
+              <div class="bg-blue-50 dark:bg-slate-800 p-3 rounded-lg border border-blue-200 dark:border-slate-700">
+                <span class="text-xs text-slate-600 dark:text-slate-300 block font-semibold">Open Relief Shelters</span>
+                <span class="text-2xl font-black text-blue-600" id="stat-shelters">0</span>
+              </div>
+              <div class="bg-purple-50 dark:bg-slate-800 p-3 rounded-lg border border-purple-200 dark:border-slate-700">
+                <span class="text-xs text-slate-600 dark:text-slate-300 block font-semibold">LoRaWAN Packets</span>
+                <span class="text-2xl font-black text-purple-600" id="stat-lorawan">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Incidents Feed -->
+          <div class="sachet-card p-5">
+            <h3 class="text-base font-bold mb-3 text-slate-900 dark:text-slate-100 flex items-center justify-between">
+              <span><i class="fa-solid fa-bullhorn text-red-600 mr-2"></i> Active Incidents</span>
+              <button id="btn-report-disaster-modal" class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded shadow">
+                + Report Incident
+              </button>
+            </h3>
+            <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="incidents-feed-list">
+              <p class="text-xs text-slate-500">Loading incident data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION NEW: UNIFIED REAL-TIME LIVE MAP (all layers via /api/livemap) -->
+    <section id="sec-livemap" class="hidden space-y-6">
+      <div class="sachet-card p-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <i class="fa-solid fa-satellite-dish text-lime-600"></i> Unified Live Map <span class="text-xs bg-lime-100 text-lime-900 px-2 py-0.5 rounded font-bold ml-1">/api/livemap</span>
+          </h2>
+          <div class="flex items-center gap-3 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <span>Auto-refresh: <strong id="livemap-refresh-countdown">30s</strong></span>
+            <button id="btn-livemap-refresh" class="bg-lime-600 hover:bg-lime-500 text-white font-bold px-3 py-1.5 rounded shadow">
+              <i class="fa-solid fa-rotate mr-1"></i> Refresh Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Layer toggles -->
+        <div class="flex flex-wrap gap-3 mb-3 text-xs font-semibold text-slate-700 dark:text-slate-300" id="livemap-layer-toggles">
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="disasters" checked> <span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span> Disasters</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="landslide_zones" checked> <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> Landslide Risk Zones</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="shelters" checked> <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Shelters</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="hospitals" checked> <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> Hospitals</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="volunteers" checked> <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Volunteers</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="field_reports" checked> <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span> Field/Citizen Reports</label>
+          <label class="livemap-layer-toggle flex items-center gap-1.5"><input type="checkbox" data-layer="sponsor_equipment" checked> <span class="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span> Sponsor Equipment</label>
+        </div>
+
+        <div id="livemap-map" class="shadow-md"></div>
+
+        <div class="mt-3 flex flex-wrap justify-between items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+          <span id="livemap-feature-count"><i class="fa-solid fa-layer-group mr-1"></i> Loading live feed...</span>
+          <span id="livemap-generated-at"></span>
+        </div>
+      </div>
+    </section>
+    <section id="sec-policies" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-scale-balanced text-emerald-600"></i> Disaster Management Act 2005 Policies & Relief Refund Claims Portal
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Government policy frameworks, statutory ex-gratia norms, and pre/post disaster financial refund claims</p>
+          </div>
+          <button id="btn-open-claim-modal" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-lg text-sm shadow flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar"></i> File Pre / Post Relief Refund Claim
+          </button>
+        </div>
+
+        <!-- Pre vs Post Refund Schemes Banner -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="p-4 bg-emerald-50 dark:bg-slate-800 border-l-4 border-l-emerald-600 rounded-xl">
+            <h3 class="font-bold text-emerald-950 dark:text-emerald-300 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-shield-cat text-lg"></i> Pre-Disaster Evacuation & Logistics Refund Scheme
+            </h3>
+            <p class="text-xs text-slate-700 dark:text-slate-300 mt-1">
+              Reimburses pro-active evacuation costs, private vehicle transport, emergency fuel, and temporary food supplies for families evacuating RED alert zones ahead of cyclone/flood landfall.
+            </p>
+          </div>
+          <div class="p-4 bg-blue-50 dark:bg-slate-800 border-l-4 border-l-blue-600 rounded-xl">
+            <h3 class="font-bold text-blue-950 dark:text-blue-300 text-sm flex items-center gap-2">
+              <i class="fa-solid fa-house-crack text-lg"></i> Post-Disaster Structural Damage & Crop Refund
+            </h3>
+            <p class="text-xs text-slate-700 dark:text-slate-300 mt-1">
+              Statutory compensation under NDRF/SDRF Section 46 for residential building rebuilding, household asset destruction, livestock loss, and agricultural inundation.
+            </p>
+          </div>
+        </div>
+
+        <!-- DM Act 2005 Policy Cards -->
+        <div class="mb-8">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-amber-500"></i> Disaster Management Act 2005 Legal Directives
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="policies-cards-grid">
+            <p class="text-xs text-slate-500">Loading Disaster Management Act policies...</p>
+          </div>
+        </div>
+
+        <!-- Refund Claims Tracking Table -->
+        <div class="space-y-3">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
+            <span><i class="fa-solid fa-receipt text-emerald-600 mr-2"></i> Active Disaster Victim Relief Refund Claims</span>
+            <span class="text-xs bg-emerald-100 text-emerald-900 px-2.5 py-1 rounded font-bold" id="claims-count-badge">0 Claims Logged</span>
+          </h3>
+          <div class="overflow-x-auto border rounded-xl dark:border-slate-700">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 uppercase text-xs font-bold">
+                <tr>
+                  <th class="p-3">Claim ID</th>
+                  <th class="p-3">Claimant Name</th>
+                  <th class="p-3">Damage Type</th>
+                  <th class="p-3">Claimed Amount</th>
+                  <th class="p-3">Location</th>
+                  <th class="p-3">Description</th>
+                  <th class="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="claims-table-body" class="divide-y dark:divide-slate-700">
+                <tr><td colspan="7" class="p-4 text-xs text-slate-500 text-center">Loading relief refund claims...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION NEW: SPONSOR & NGO RELIEF AID COMMAND CENTER + LEADERBOARD & VERIFICATION -->
+    <section id="sec-sponsors" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-hand-holding-hand text-cyan-600"></i> Sponsors & NGO Relief Verification & Leaderboard Platform
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Verify donated equipment delivery in the field, track GPS proof, and view Sponsor Trust Rankings</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-open-sponsor-equip-modal" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-truck-ramp-box"></i> Upload Donated Equipment
+            </button>
+            <button id="btn-open-impact-report-modal" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-2 rounded-lg text-xs shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-square-poll-vertical"></i> Submit Impact Report
+            </button>
+            <button id="btn-open-sponsor-reg-modal" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3.5 py-2 rounded-lg text-xs border border-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-building-flag"></i> Register Sponsor / NGO
+            </button>
+          </div>
+        </div>
+
+        <!-- Sponsor Trust Leaderboard Table -->
+        <div class="mb-8">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center justify-between">
+            <span><i class="fa-solid fa-trophy text-amber-500 mr-2"></i> Verified Sponsor & NGO Trust Leaderboard Rankings</span>
+            <span class="text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">Ranked by Verified Impact</span>
+          </h3>
+          <div class="overflow-x-auto border rounded-xl dark:border-slate-700">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 uppercase text-xs font-bold">
+                <tr>
+                  <th class="p-3">Rank & Badge</th>
+                  <th class="p-3">Organization Name</th>
+                  <th class="p-3">Sponsor Type</th>
+                  <th class="p-3">Verified Deliveries</th>
+                  <th class="p-3">Families Assisted</th>
+                  <th class="p-3">Total Contribution</th>
+                  <th class="p-3">Trust Score</th>
+                </tr>
+              </thead>
+              <tbody id="sponsors-leaderboard-tbody" class="divide-y dark:divide-slate-700">
+                <tr><td colspan="7" class="p-4 text-xs text-slate-500 text-center">Loading sponsor leaderboard rankings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Donated Equipment Feed with Verification Action -->
+        <div class="mb-8">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center justify-between">
+            <span><i class="fa-solid fa-boxes-packing text-cyan-600 mr-2"></i> Donated Equipment & Field Delivery Verification Log</span>
+            <span class="text-xs bg-cyan-100 text-cyan-900 px-2 py-0.5 rounded font-bold" id="equipment-count-badge">0 Equipment Logged</span>
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="donated-equipment-grid">
+            <p class="text-xs text-slate-500">Loading donated equipment data...</p>
+          </div>
+        </div>
+
+        <!-- Sponsor Relief Impact Reports Feed -->
+        <div class="space-y-4">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
+            <span><i class="fa-solid fa-heart-circle-check text-red-600 mr-2"></i> Relief Assistance Impact Reports (How Sponsors Helped)</span>
+            <span class="text-xs bg-red-100 text-red-900 px-2 py-0.5 rounded font-bold" id="impact-reports-count-badge">0 Reports Published</span>
+          </h3>
+          <div class="space-y-4" id="sponsor-impact-reports-feed">
+            <p class="text-xs text-slate-500">Loading sponsor impact reports...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: WEATHER API CONNECTIVITY -->
+    <section id="sec-weather" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-cloud-bolt text-blue-600"></i> Meteorological Weather Intelligence API
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Powered by OpenWeatherMap API & Live Weather Station Telemetry</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="weather-city-input" placeholder="Enter City (e.g. New Delhi, Mumbai)" class="px-3 py-2 text-sm border rounded-lg text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+            <button id="btn-fetch-weather" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm">
+              <i class="fa-solid fa-magnifying-glass"></i> Query API
+            </button>
+          </div>
+        </div>
+
+        <!-- Weather Main Card -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-gradient-to-br from-blue-700 to-indigo-900 text-white p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="text-2xl font-black" id="wx-city-name">New Delhi</h3>
+                  <span class="text-xs opacity-80" id="wx-source">OpenWeatherMap Connected</span>
+                </div>
+                <span class="text-xs bg-amber-400 text-slate-950 font-bold px-2 py-1 rounded">MONSOON WARNING</span>
+              </div>
+              <div class="my-6 flex items-center gap-4">
+                <span class="text-6xl font-black" id="wx-temp">29°C</span>
+                <div>
+                  <p class="text-lg font-bold text-blue-200" id="wx-condition">Heavy Rain & Thunder</p>
+                  <p class="text-xs text-blue-100">Feels like <span id="wx-feels">33°C</span></p>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs bg-blue-950/50 p-3 rounded-lg text-white">
+              <div><i class="fa-solid fa-droplet text-blue-300 mr-1"></i> Humidity: <strong id="wx-humidity">84%</strong></div>
+              <div><i class="fa-solid fa-wind text-blue-300 mr-1"></i> Wind: <strong id="wx-wind">38 km/h</strong></div>
+              <div><i class="fa-solid fa-gauge text-blue-300 mr-1"></i> Pressure: <strong id="wx-pressure">994 hPa</strong></div>
+              <div><i class="fa-solid fa-compass text-blue-300 mr-1"></i> Direction: <strong>ENE</strong></div>
+            </div>
+          </div>
+
+          <!-- 5-Day Weather Forecast -->
+          <div class="md:col-span-2 space-y-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100"><i class="fa-solid fa-calendar-days text-amber-500 mr-2"></i> 5-Day Meteorological Forecast</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3" id="wx-forecast-grid">
+              <p class="text-xs text-slate-500">Fetching forecast details...</p>
+            </div>
+
+            <!-- Severe Weather Warning Card -->
+            <div class="p-4 bg-amber-50 dark:bg-slate-800 border border-amber-300 dark:border-slate-700 rounded-xl">
+              <h4 class="font-bold text-amber-900 dark:text-amber-400 text-sm flex items-center gap-2">
+                <i class="fa-solid fa-cloud-showers-water text-lg"></i> Flood & Monsoon Inundation Advisory
+              </h4>
+              <p class="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                Continuous high-intensity rainfall forecasted for the next 48 hours across low-lying river plains. Disaster relief centers on high standby.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: VOLUNTEER AROUND FOR INFORMATION -->
+    <section id="sec-volunteers" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-users-viewfinder text-emerald-600"></i> Volunteer Around & Ground Information Network
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Discover active emergency volunteers nearby, skill sets, and ground contact points</p>
+          </div>
+          <button id="btn-register-vol-modal" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">
+            <i class="fa-solid fa-hand-holding-hand mr-1.5"></i> Become a Registered Volunteer
+          </button>
+        </div>
+
+        <!-- Volunteer Filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Search Radius (km)</label>
+            <select id="vol-filter-radius" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-900 dark:text-white dark:border-slate-700">
+              <option value="10">Within 10 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="50" selected>Within 50 km</option>
+              <option value="100">Within 100 km</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Required Skill Set</label>
+            <select id="vol-filter-skill" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-900 dark:text-white dark:border-slate-700">
+              <option value="">All Skills</option>
+              <option value="Medical">Medical / First Aid</option>
+              <option value="Search & Rescue">Search & Rescue</option>
+              <option value="Logistics">Logistics & Relief Distribution</option>
+              <option value="Communication">Communication & Radio</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <button id="btn-apply-vol-filter" class="w-full bg-slate-800 text-white hover:bg-slate-700 font-bold p-2 text-sm rounded-lg">
+              <i class="fa-solid fa-filter mr-1"></i> Filter Volunteers
+            </button>
+          </div>
+        </div>
+
+        <!-- Volunteers Directory Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="volunteers-cards-grid">
+          <p class="text-xs text-slate-500">Loading nearby volunteers...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: LORAWAN CONNECTIVITY & OFFLINE MESSAGING -->
+    <section id="sec-lorawan" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-tower-cell text-amber-500"></i> LoRaWAN Sub-GHz Offline Radio Mesh Console
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Disaster emergency messaging when cellular tower signals and internet connections fail</p>
+          </div>
+          <button id="btn-toggle-outage" class="bg-red-700 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">
+            <i class="fa-solid fa-power-off mr-1.5"></i> Simulate Network Outage Toggle
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Transmit Radio Message Panel -->
+          <div class="sachet-card p-5 bg-slate-900 text-white border-amber-500 border">
+            <h3 class="text-base font-bold text-amber-400 mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-radio"></i> Radio Packet Transmitter
+            </h3>
+            <form id="form-send-lora" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold mb-1 text-slate-200">Sender Identifier / Node</label>
+                <input type="text" id="lora-sender" required value="Citizen Emergency Node #12" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+              </div>
+              <div>
+                <label class="block text-xs font-bold mb-1 text-slate-200">Packet Type</label>
+                <select id="lora-packet-type" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                  <option value="SOS">CRITICAL SOS EMERGENCY</option>
+                  <option value="TELEMETRY">Telemetry Data (Water/Wind Level)</option>
+                  <option value="BROADCAST">Field Relay Broadcast</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold mb-1 text-slate-200">Emergency Payload Message</label>
+                <textarea id="lora-message" required rows="3" placeholder="Describe emergency location and situation..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white"></textarea>
+              </div>
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-lg uppercase text-sm tracking-wider shadow">
+                <i class="fa-solid fa-paper-plane mr-2"></i> Transmit LoRa Packet (865-868MHz)
+              </button>
+            </form>
+          </div>
+
+          <!-- Received Radio Message Feed -->
+          <div class="lg:col-span-2 space-y-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center justify-between">
+              <span><i class="fa-solid fa-wave-square text-amber-500 mr-2"></i> Decoded Radio Mesh Packets Buffer</span>
+              <span class="text-xs bg-slate-200 dark:bg-slate-800 px-2.5 py-1 rounded text-slate-900 dark:text-slate-200 font-bold" id="lora-mode-badge">NETWORK: PRIMARY ONLINE</span>
+            </h3>
+
+            <div class="space-y-3 max-h-96 overflow-y-auto pr-1" id="lora-packets-feed">
+              <p class="text-xs text-slate-500">Loading radio packet logs...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: SHELTERS & HOSPITALS -->
+    <section id="sec-resources" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2 border-b pb-4 dark:border-slate-700">
+          <i class="fa-solid fa-hospital-user text-purple-600"></i> Emergency Shelters, Medical Centers & Relief Grants
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Shelters List -->
+          <div>
+            <h3 class="text-base font-bold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-house-chimney-medical text-blue-600"></i> Relief Shelters Capacity
+            </h3>
+            <div class="space-y-3" id="shelters-list">
+              <p class="text-xs text-slate-500">Loading shelters...</p>
+            </div>
+          </div>
+
+          <!-- Hospitals List -->
+          <div>
+            <h3 class="text-base font-bold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-hospital text-red-600"></i> Designated Emergency Hospitals
+            </h3>
+            <div class="space-y-3" id="hospitals-list">
+              <p class="text-xs text-slate-500">Loading hospitals...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION NEW: NER LANDSLIDE EARLY WARNING & RISK MONITORING -->
+    <section id="sec-landslide" class="hidden space-y-6">
+
+      <div id="landslide-warning-banner" class="hidden mb-2 p-4 bg-orange-900 text-white rounded-xl shadow-lg border-2 border-orange-500 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-orange-600 rounded-full text-2xl font-black pulse-red">
+            <i class="fa-solid fa-mountain-sun"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold uppercase text-yellow-300">Active Landslide Early Warnings — North East Region</h3>
+            <p class="text-sm text-orange-100" id="landslide-warning-summary">Checking monitored zones...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="sachet-card p-4 border-l-4 border-l-orange-500 text-xs text-slate-600 dark:text-slate-300">
+        <i class="fa-solid fa-circle-info text-orange-500 mr-1"></i>
+        Risk levels here come from the <strong>IDRMS Weighted Risk Index</strong> — a transparent, rule-based score combining 24-hour rainfall, slope angle, soil saturation and 5-year incident history for each monitored zone. It is not a trained machine-learning model; treat it as a decision-support signal alongside official IMD / GSI advisories.
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 sachet-card p-4 flex flex-col">
+          <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <i class="fa-solid fa-map-location-dot text-orange-600"></i> NER Landslide Risk Map
+            </h2>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span> Critical</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span> High</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Moderate</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Low</span>
+            </div>
+          </div>
+          <div id="landslide-map"></div>
+        </div>
+
+        <div class="sachet-card p-5">
+          <h3 class="text-base font-bold mb-3 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-clipboard-list text-orange-600"></i> Submit Ground Observation
+          </h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Volunteers and citizens on-site can log what they're seeing with optional photo evidence — this feeds directly into the risk score for that zone.</p>
+          <form id="form-landslide-report" class="space-y-3" enctype="multipart/form-data">
+            <div>
+              <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Monitored Zone</label>
+              <select id="lsr-zone" required class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Observation Type</label>
+              <select id="lsr-type" required class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+                <option>Crack Sighted</option>
+                <option>Water Seepage</option>
+                <option>Trees Tilting</option>
+                <option>Minor Slide</option>
+                <option>Major Slide / Road Blocked</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Description</label>
+              <textarea id="lsr-desc" rows="2" placeholder="What did you observe, and where exactly?" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Attach Observation Photo</label>
+              <input type="file" id="lsr-photo" accept="image/*" class="w-full text-xs text-slate-900 dark:text-slate-100 border rounded-lg p-2 bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
+            </div>
+            <button type="submit" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2.5 rounded-lg text-sm shadow">
+              <i class="fa-solid fa-paper-plane mr-1"></i> Submit Report (Login Required)
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- CITIZEN & FIELD OFFICIAL GEO-TAGGED HAZARD REPORTING CARD -->
+      <div class="sachet-card p-6 bg-gradient-to-r from-slate-900 to-amber-950 text-white border-2 border-amber-500 rounded-2xl shadow-xl">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-4 border-b border-amber-800/60 pb-3">
+          <div>
+            <h3 class="text-lg font-black text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-camera-retro"></i> Citizen & Field Official Geo-Tagged Hazard Photo Upload
+            </h3>
+            <p class="text-xs text-amber-200">Upload live photos of cracks, slope movement, land sinking, or blocked roads to alert disaster management authorities immediately.</p>
+          </div>
+          <span class="text-xs bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded-full uppercase">Real-Time Verification</span>
+        </div>
+        <form id="form-field-photo-report" class="grid grid-cols-1 md:grid-cols-3 gap-4" enctype="multipart/form-data">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-200">Hazard / Incident Type</label>
+            <select id="fld-type" required class="w-full text-sm bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+              <option value="Road Blockage / Landslide Debris">Road Blockage / Landslide Debris</option>
+              <option value="Ground Cracks Sighted">Ground Cracks Sighted</option>
+              <option value="Slope Movement / Soil Slip">Slope Movement / Soil Slip</option>
+              <option value="Flash Flood Inundation">Flash Flood Inundation</option>
+              <option value="Bridge / Highway Structural Failure">Bridge / Highway Structural Failure</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-200">Location Name / Sector</label>
+            <input type="text" id="fld-location" required placeholder="NH-10 Chungthang Highway, Sikkim" class="w-full text-sm bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-200">Upload Geo-Tagged Photo</label>
+            <input type="file" id="fld-photo" required accept="image/*" class="w-full text-xs bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold mb-1 text-slate-200">Hazard Details & Observation Notes</label>
+            <input type="text" id="fld-desc" placeholder="Major road crack of 4-inch width expanding rapidly..." class="w-full text-sm bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white">
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-lg text-sm shadow uppercase tracking-wide">
+              <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Submit Field Photo
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="sachet-card p-6">
+        <h3 class="text-base font-bold mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-gauge-high text-orange-600"></i> Monitored Zones & Risk Index
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="landslide-zones-grid">
+          <p class="text-xs text-slate-500">Loading monitored zones...</p>
+        </div>
+      </div>
+
+      <div class="sachet-card p-6">
+        <h3 class="text-base font-bold mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <i class="fa-solid fa-table-list text-orange-600"></i> Ground Reports Submitted (<span id="landslide-report-count-badge">0</span>)
+        </h3>
+        <div class="overflow-x-auto border rounded-xl dark:border-slate-700">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 uppercase text-xs font-bold">
+              <tr>
+                <th class="p-3">Report ID</th>
+                <th class="p-3">Zone / Location</th>
+                <th class="p-3">Observation</th>
+                <th class="p-3">Photo Evidence</th>
+                <th class="p-3">Description</th>
+                <th class="p-3">Reported By</th>
+                <th class="p-3">Submitted At</th>
+              </tr>
+            </thead>
+            <tbody id="landslide-reports-table-body" class="divide-y dark:divide-slate-700">
+              <tr><td colspan="7" class="p-4 text-xs text-slate-500 text-center">Loading ground reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: ADMIN BACKEND & LOGGED-IN USERS TABLE -->
+    <section id="sec-admin" class="hidden space-y-6">
+      <div class="sachet-card p-6">
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 border-b pb-4 dark:border-slate-700">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-user-shield text-red-600"></i> Admin Backend Command Center & Logged-In User Information
+            </h2>
+            <p class="text-xs text-slate-600 dark:text-slate-300">Backend database view for logged in users, role management, and emergency broadcast dispatch</p>
+          </div>
+          <button id="btn-broadcast-alert-modal" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">
+            <i class="fa-solid fa-tower-broadcast mr-1"></i> Issue Sachet Alert Broadcast
+          </button>
+        </div>
+
+        <!-- Logged In / Registered Users Database Table -->
+        <div class="space-y-4 mb-8">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-users text-blue-600"></i> System User Database Records (<span id="user-count-badge">0</span> Registered Users)
+          </h3>
+          <div class="overflow-x-auto border rounded-xl dark:border-slate-700">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 uppercase text-xs font-bold">
+                <tr>
+                  <th class="p-3">User ID</th>
+                  <th class="p-3">Full Name</th>
+                  <th class="p-3">Email Address</th>
+                  <th class="p-3">Assigned Role</th>
+                  <th class="p-3">Phone</th>
+                  <th class="p-3">Location Coordinates</th>
+                  <th class="p-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body" class="divide-y dark:divide-slate-700">
+                <tr>
+                  <td colspan="7" class="p-4 text-xs text-slate-500 text-center">Loading database user records... (Please log in as Admin if required)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- UPLOADED PHOTOS & VERIFICATION GALLERY (ADMIN ONLY VIEW) -->
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-images text-purple-600"></i> Uploaded Photo Gallery & Evidence Verification (<span id="gallery-count-badge">0</span> Photos Logged)
+            </h3>
+            <button id="btn-refresh-gallery" class="text-xs bg-purple-700 hover:bg-purple-600 text-white font-bold px-3 py-1 rounded shadow">
+              <i class="fa-solid fa-rotate mr-1"></i> Refresh Gallery
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="admin-gallery-grid">
+            <p class="text-xs text-slate-500">Loading uploaded photo records...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: VERIFY EQUIPMENT DELIVERY -->
+  <div id="modal-verify-equipment" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-square-check text-emerald-600"></i> Field Officer Delivery Verification
+      </h3>
+      <form id="form-verify-equipment" class="space-y-3">
+        <input type="hidden" id="verify-equip-id">
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Equipment Name</label>
+          <input type="text" id="verify-equip-name-display" disabled class="w-full text-sm border rounded-lg p-2.5 bg-slate-100 text-slate-900 font-bold dark:bg-slate-800 dark:text-white">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Verifying Field Officer (Name & Designation)</label>
+          <input type="text" id="verify-officer-name" required placeholder="Commander Vikram (NDRF Battalion 8)" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Delivery Latitude</label>
+            <input type="text" id="verify-lat" required value="28.6924" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700 font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Delivery Longitude</label>
+            <input type="text" id="verify-lng" required value="77.2145" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700 font-mono">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Upload Delivery Proof Photo</label>
+          <input type="file" id="verify-proof-file" accept="image/*" class="w-full text-xs border rounded-lg p-2 bg-slate-50 text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Or External Image URL (Optional)</label>
+          <input type="text" id="verify-proof-url" placeholder="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm shadow flex items-center justify-center gap-2">
+          <i class="fa-solid fa-badge-check"></i> Sign-off & Confirm Delivery
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FILE RELIEF CLAIM -->
+  <div id="modal-claim" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-lg p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-file-invoice-dollar text-emerald-600"></i> File Pre / Post Disaster Relief Refund Claim
+      </h3>
+      <form id="form-file-claim" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Claimant Name</label>
+            <input type="text" id="claim-name" required placeholder="Full Legal Name" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Phone Number</label>
+            <input type="text" id="claim-phone" required placeholder="+91 98765 43210" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Damage / Claim Type</label>
+            <select id="claim-type" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+              <option value="HOUSE_DAMAGE">Post-Disaster House Damage</option>
+              <option value="PRE_EVACUATION_COST">Pre-Disaster Evacuation Transport</option>
+              <option value="CROP_LOSS">Agricultural Crop Loss</option>
+              <option value="MEDICAL_INJURY">Emergency Medical Expense</option>
+              <option value="BUSINESS_LOSS">Small Business Inundation</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Claimed Amount (₹)</label>
+            <input type="number" id="claim-amount" required placeholder="e.g. 45000" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Affected Location / Sector</label>
+          <input type="text" id="claim-location" required placeholder="e.g. Majnu ka Tilla Block B, Delhi" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Bank Account (Last 4 Digits)</label>
+            <input type="text" id="claim-bank" maxLength="4" placeholder="4892" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Disaster ID</label>
+            <input type="text" id="claim-disaster-id" value="DIS-101" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Damage Description & Circumstances</label>
+          <textarea id="claim-desc" rows="2" placeholder="Briefly describe inundation or evacuation details..." class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Submit Relief Refund Claim
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: UPLOAD DONATED EQUIPMENT -->
+  <div id="modal-sponsor-equip" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-lg p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-truck-ramp-box text-cyan-600"></i> Upload Donated Relief Equipment & Aid
+      </h3>
+      <form id="form-upload-equip" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Sponsor / NGO Name</label>
+            <input type="text" id="equip-sponsor-name" required placeholder="Global Disaster Relief Foundation" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Equipment Category</label>
+            <select id="equip-category" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+              <option value="RESCUE_BOATS">Rescue Boats & Watercraft</option>
+              <option value="WATER_PURIFIERS">Water Purification Plants</option>
+              <option value="POWER_GENERATORS">Emergency Power Generators</option>
+              <option value="FOOD_KITS">Ration & Food Supplies</option>
+              <option value="RELIEF_TENTS">Tents & Temporary Shelters</option>
+              <option value="MEDICAL_SUPPLIES">Medical Kits & Cold Chain</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Equipment Description / Model</label>
+          <input type="text" id="equip-name" required placeholder="Heavy Duty Inflatable Rescue Boats (8-Seater)" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Quantity</label>
+            <input type="number" id="equip-qty" required value="10" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Unit</label>
+            <input type="text" id="equip-unit" value="Boats" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Estimated Value (₹)</label>
+            <input type="number" id="equip-val" placeholder="1200000" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Deployed Destination / Base Camp</label>
+          <input type="text" id="equip-location" required placeholder="Yamuna Flood Relief Base Camp #2" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Upload Equipment Photo (Optional)</label>
+          <input type="file" id="equip-photo" accept="image/*" class="w-full text-xs border rounded-lg p-2 bg-slate-50 text-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Upload & Log Equipment Aid
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SUBMIT IMPACT REPORT -->
+  <div id="modal-impact-report" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-lg p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-square-poll-vertical text-blue-600"></i> Submit Sponsor Relief Impact Report
+      </h3>
+      <form id="form-submit-impact" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Sponsor / NGO Name</label>
+            <input type="text" id="impact-sponsor-name" required placeholder="Tata Trusts CSR Response Unit" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Families Assisted</label>
+            <input type="number" id="impact-families" required value="1500" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Report Title</label>
+          <input type="text" id="impact-title" required placeholder="Evacuation & Clean Water Relief Action Summary" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Location Served</label>
+            <input type="text" id="impact-location" required placeholder="Majnu Ka Tilla Lowlands" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Equipment Deployed</label>
+            <input type="text" id="impact-equip-deployed" placeholder="10 Rescue Boats & 5 Purifiers" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Detailed Relief Action & Results Summary</label>
+          <textarea id="impact-summary" required rows="3" placeholder="Describe how equipment and aid reached disaster victims and ground outcomes..." class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Publish Impact Report
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTER SPONSOR -->
+  <div id="modal-sponsor-reg" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-lg p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-building-flag text-purple-600"></i> Register Sponsor / NGO Organization
+      </h3>
+      <form id="form-register-sponsor" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Organization Name</label>
+            <input type="text" id="sponreg-name" required placeholder="Red Cross Emergency Aid" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Sponsor Type</label>
+            <select id="sponreg-type" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+              <option value="NGO">NGO / Non-Profit</option>
+              <option value="CORPORATE_CSR">Corporate CSR</option>
+              <option value="INTERNATIONAL_AID">International Aid Agency</option>
+              <option value="INDIVIDUAL_PHILANTHROPIST">Individual Philanthropist</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Contact Person</label>
+            <input type="text" id="sponreg-person" required placeholder="Dr. Arvind S." class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Email Address</label>
+            <input type="email" id="sponreg-email" required placeholder="relief@organization.org" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Phone</label>
+            <input type="text" id="sponreg-phone" required placeholder="+91 11 2345 6789" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Website URL</label>
+            <input type="text" id="sponreg-website" placeholder="https://organization.org" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Register Organization
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: LOGIN -->
+  <div id="modal-login" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-right-to-bracket text-blue-600"></i> User Login
+      </h3>
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Email Address</label>
+          <input type="email" id="login-email" required placeholder="admin@idrms.gov.in or citizen@gmail.com" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div class="bg-blue-50 dark:bg-slate-800 p-3 rounded-lg text-xs text-blue-900 dark:text-blue-300">
+          <strong>Demo Credentials:</strong><br>
+          Admin: <code>admin@idrms.gov.in</code> / <code>admin123</code><br>
+          Volunteer: <code>rajesh.volunteer@idrms.gov.in</code> / <code>vol123</code><br>
+          Citizen: <code>citizen@gmail.com</code> / <code>citizen123</code>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Login to System
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTER -->
+  <div id="modal-register" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-lg p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-user-plus text-emerald-600"></i> Register New User Account
+      </h3>
+      <form id="form-register" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Full Name</label>
+            <input type="text" id="reg-name" required placeholder="John Doe" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Role</label>
+            <select id="reg-role" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+              <option value="Citizen">Citizen</option>
+              <option value="Volunteer">Volunteer</option>
+              <option value="FirstResponder">First Responder</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Email</label>
+            <input type="email" id="reg-email" required placeholder="user@gmail.com" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Password</label>
+            <input type="password" id="reg-pass" required placeholder="••••••••" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Phone Number</label>
+          <input type="text" id="reg-phone" placeholder="+91 98765 43210" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Address / Sector</label>
+          <input type="text" id="reg-address" placeholder="Sector 14, Rohini, Delhi" class="w-full text-sm border rounded-lg p-2 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm shadow">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 text-slate-400 py-6 border-t border-slate-800 text-xs">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img src="images/idrms_logo.jpg" alt="IDRMS Logo" class="h-10 w-auto rounded bg-white p-0.5" />
+        <div>
+          <p class="font-bold text-slate-200">IDRMS - Intelligence Disaster Resilience Management System</p>
+          <p class="text-slate-400 mt-0.5">Sachet Govt Standard Compliant | Real-time OpenWeather Intelligence</p>
+        </div>
+      </div>
+      <div>
+        <p>© 2026 Government Emergency Platform. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Main Logic JS -->
+  <script src="js/app.js"></script>
+  <!-- MODAL: BROADCAST EMERGENCY ALERT -->
+  <div id="modal-broadcast-alert" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4">
+    <div class="sachet-card w-full max-w-md p-6 relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl">
+      <button class="btn-close-modal absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="text-xl font-black mb-4 text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <i class="fa-solid fa-tower-broadcast text-red-600"></i> Issue Sachet Alert Broadcast
+      </h3>
+      <form id="form-broadcast-alert" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Alert Title</label>
+          <input type="text" id="broadcast-title" required placeholder="FLASH FLOOD RED ALERT" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Message</label>
+          <textarea id="broadcast-message" required rows="3" placeholder="Residents of ... must move to ... immediately." class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Severity</label>
+            <select id="broadcast-severity" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+              <option>CRITICAL</option>
+              <option>WARNING</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1 text-slate-900 dark:text-slate-100">Broadcast Area</label>
+            <input type="text" id="broadcast-area" placeholder="North & East Delhi District" class="w-full text-sm border rounded-lg p-2.5 text-slate-900 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-700">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2.5 rounded-lg text-sm shadow uppercase">
+          <i class="fa-solid fa-satellite-dish mr-1"></i> Broadcast Now
+        </button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
